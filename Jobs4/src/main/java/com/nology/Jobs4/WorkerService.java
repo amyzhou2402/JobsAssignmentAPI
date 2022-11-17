@@ -2,6 +2,8 @@ package com.nology.Jobs4;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -141,53 +143,61 @@ public class WorkerService {
 	// (2) available in job range
 	
 	public List<Temp> checkTemp(Long jobId){
-		// list of temps
-		// calculate date range
-			//  check for jobs
-			// new startDate > current endDate
-			// new endDate < current startDate
-		
-		// one temp can have multiple jobs. 
-		// loop through jobs, for each job, check if dates are ok
-		// early exit
-		
-		
-		List<Job> allJobs = allJobs(); 
-		List<Temp> allTemps = allTemps(); 
-		ArrayList<Temp> filteredList = new ArrayList<Temp>();
-		
-		Job job = findJob(jobId);
-		
-		LocalDate currentEndDate = job.getEndDate();
-		LocalDate currentStartDate = job.getStartDate(); 
-		
-		for(Temp checkedTemp: allTemps) {
-//			if(checkedTemp.getJobsArr().size() == 0) {
-//				filteredList.add(checkedTemp);
-//			}
-			
-			for (Job checkedJob: allJobs) {
-				if(checkedJob.getStartDate().isBefore(currentEndDate)) {
-					System.out.println("one");
-					return null; 
-				}
-				if(checkedJob.getStartDate().isEqual(currentEndDate)) {
-					System.out.println("two");
-					return null;  
-				}
-				if(checkedJob.getEndDate().isAfter(currentStartDate)) {
-					System.out.println("threee");
-					return null; 
-				}
-				if(checkedJob.getEndDate().isEqual(currentStartDate)) {
-					System.out.println("four");
-					return null; 
-				}
-				continue; 
+		Optional<Job> fetchedJob = jobRepository.findById(jobId);
+
+		if (fetchedJob.isEmpty())
+			return null;
+
+		Job currentJob = jobRepository.findById(jobId).get();
+
+		ArrayList<Temp> tempList = new ArrayList<>();
+
+		for (Temp temp : allTemps()) {
+
+//			zero check
+			if (temp.getJobsArr().size() == 0) {
+				tempList.add(temp);
+				continue;
 			}
-			filteredList.add(checkedTemp);
+			LocalDate currentStart, currentFinish, newStart, newFinish;
+			currentStart = currentJob.getStartDate();
+			currentFinish = currentJob.getEndDate();
+
+//			sorted jobArr
+			ArrayList<Job> jobArr = new ArrayList<>();
+			for (Job job : temp.getJobsArr()) {
+				jobArr.add(job);
+				continue;
+			}
+			Collections.sort(jobArr, new Comparator<Job>() {
+				public int compare(Job a, Job b) {
+					return a.getStartDate().compareTo(b.getStartDate());
+				}
+			});
+
+//			start and end checks
+			newStart = jobArr.get(0).getStartDate();
+			newFinish = jobArr.get(jobArr.size() - 1).getEndDate();
+			if (currentFinish.isBefore(newStart)) {
+				tempList.add(temp);
+				continue;
+			}
+			if (newFinish.isBefore(currentStart)) {
+				tempList.add(temp);
+				continue;
+			}
+
+//			in between checks
+			for (int i = 0; i < jobArr.size() - 1; i++) {
+				newFinish = jobArr.get(i).getEndDate();
+				newStart = jobArr.get(i + 1).getStartDate();
+				if (newFinish.isBefore(currentStart) && currentFinish.isBefore(newStart)) {
+					tempList.add(temp);
+					continue;
+				}
+			}
 		}
-		return filteredList; 		
+		return tempList;		
 	}
 	
 	
