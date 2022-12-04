@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotBlank;
 
 import com.nology.Jobs4.Jobs.Job;
 
@@ -19,6 +20,12 @@ public class Temp {
 	private Long id;
 	private String firstName;
 	private String lastName;
+	
+	@NotBlank
+	private String username; 
+	
+	@NotBlank
+	private String password;
 
 	public Temp(String firstName, String lastName) {
 		this.firstName = firstName;

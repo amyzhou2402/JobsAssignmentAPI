@@ -2,13 +2,11 @@ package com.nology.Jobs4.Jobs;
 
 import java.time.LocalDate;
 
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
-
-import com.nology.Jobs4.Temps.Temp;
 
 public class JobDTO {
 	
-//	private Job job; 
 	
 	@NotNull
 	private String name; 
@@ -17,9 +15,10 @@ public class JobDTO {
 	private LocalDate startDate;
 	
 	@NotNull
+	@FutureOrPresent
 	private LocalDate endDate;
 	
-	public Temp temp; 
+	public Long tempId; 
 
 	public String getName() {
 		return name;
@@ -45,12 +44,12 @@ public class JobDTO {
 		this.endDate = endDate;
 	}
 
-	public Temp getTemp() {
-		return temp;
+	public Long getTemp() {
+		return tempId;
 	}
 
-	public void setTemp(Temp temp) {
-		this.temp = temp;
+	public void setTemp(Long tempId) {
+		this.tempId= tempId;
 	} 
 	
 

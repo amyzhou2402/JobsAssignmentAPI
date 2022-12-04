@@ -1,4 +1,4 @@
-package com.nology.Jobs4;
+package com.nology.Jobs4.Jobs;
 
 import java.util.List;
 
@@ -17,37 +17,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nology.Jobs4.Jobs.Job;
-import com.nology.Jobs4.Jobs.JobDTO;
-import com.nology.Jobs4.Temps.Temp;
-import com.nology.Jobs4.Temps.TempDTO;
-
 @RestController
-public class WorkerController {
+public class JobController {
 	
 	@Autowired
-	private WorkerService service; 
+	private JobService service;
 	
 	@GetMapping(value = "/jobs")
 	public List<Job> getJobs() {
 		return service.allJobs(); 
 	}
 	
-	@GetMapping(value = "/temps")
-	public List<Temp> getTemps() {
-		return service.allTemps();
-	}
-	
 	@PostMapping(value = "/jobs")
 	@ResponseStatus(value = HttpStatus.CREATED)
-	public void saveJob(@Valid @RequestBody JobDTO job) {
-		service.createJob(job);
-	}
-	
-	@PostMapping(value = "/temps")
-	@ResponseStatus(value = HttpStatus.CREATED)
-	public void saveTemp(@Valid @RequestBody TempDTO temp) {
-		service.createTemp(temp);
+	public Job saveJob(@Valid @RequestBody JobDTO jobData) {
+		service.createJob(jobData);
+		return null;
 	}
 	
 	@GetMapping(value = "/jobs/{id}")
@@ -60,32 +45,13 @@ public class WorkerController {
 		return new ResponseEntity<>(job, HttpStatus.OK);
 	}
 	
-	@GetMapping(value = "/temps/{id}")
-	public ResponseEntity<Temp> findTemp(@PathVariable Long id){
-		Temp temp = this.service.findTemp(id);
-		if(temp.equals(null)) {
-			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-		}
-		
-		return new ResponseEntity<>(temp, HttpStatus.OK);
-	}
-	
 	@PatchMapping(value = "jobs/{id}")
-	public ResponseEntity<Job> updateJob (@PathVariable Long id, @RequestBody JobDTO data){
-		Job job = this.service.updateJobDetails(id, data);
+	public ResponseEntity<Job> updateJob (@PathVariable Long id, @RequestBody JobDTO jobData){
+		Job job = this.service.updateJobDetails(id, jobData);
 		if(job == null) {
 			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(job, HttpStatus.NO_CONTENT);
-	}
-	
-	@PatchMapping(value = "temps/{id}")
-	public ResponseEntity<Temp> updateTemp(@PathVariable Long id, @RequestBody TempDTO data){
-		Temp temp = this.service.updateTempDetails(id, data);
-		if(temp == null) {
-			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<>(temp, HttpStatus.NO_CONTENT);
 	}
 	
 	@DeleteMapping(value = "jobs/{id}")
@@ -100,16 +66,9 @@ public class WorkerController {
 		return new ResponseEntity<>(null, HttpStatus.OK);
 	}
 	
-	@DeleteMapping(value = "temps/{id}")
-	public ResponseEntity<Temp> deleteTemp(@PathVariable Long id){
-		Temp temp = this.service.findTemp(id);
-		
-		if(temp.equals(null)) {
-			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-		}
-		
-		this.service.deleteTemp(id);
-		return new ResponseEntity<>(null, HttpStatus.OK);
+	@GetMapping(value = "jobs/assigned={boo}")
+	public List<Job> checkJobs(@PathVariable Boolean boo) {
+		return service.checkJob(boo); 
 	}
 	
 	@PutMapping(value = "jobs/{jobId}/temps/{tempId}")
@@ -120,15 +79,5 @@ public class WorkerController {
 		}
 		return new ResponseEntity<>(job, HttpStatus.NO_CONTENT);
 	}
-	
-	@GetMapping(value = "jobs/assigned={boo}")
-		public List<Job> checkJobs(@PathVariable Boolean boo) {
-			return service.checkJob(boo); 
-		}
-	
-	@GetMapping(value = "temps/jobId={jobId}")
-		public List<Temp> checkTemps(@PathVariable Long jobId){
-			return service.checkTemp(jobId); 
-		}
 
 }
